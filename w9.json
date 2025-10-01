@@ -4,13 +4,7 @@
   "width": 900,
   "height": 700,
   "projection": { "type": "mercator" },
-
   "params": [
-    {
-      "name": "severitySel",
-      "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
-      "bind": "legend"
-    },
     {
       "name": "casBucket",
       "value": "All",
@@ -43,6 +37,13 @@
       "data": {
         "url": "data/crash_data_queensland_1_crash_locations.csv"
       },
+      "params": [
+        {
+          "name": "severitySel",
+          "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
+          "bind": "legend"
+        }
+      ],
       "transform": [
         { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
         { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" }
