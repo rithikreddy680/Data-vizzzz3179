@@ -1,0 +1,100 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Queensland boundary with crash locations as proportional circles.",
+  "width": 900,
+  "height": 700,
+  "projection": { "type": "mercator" },
+
+  "params": [
+    {
+      "name": "severitySel",
+      "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
+      "bind": "legend"
+    },
+    {
+      "name": "casBucket",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All", "0-1", "2-3", "4-5", "6+"],
+        "labels": ["All casualties", "0-1", "2-3", "4-5", "6+"],
+        "name": "Casualties: "
+      }
+    }
+  ],
+
+  "layer": [
+    {
+      "name": "queensland-outline",
+      "data": {
+        "url": "data/QLD_simplified.topojson",
+        "format": { "type": "topojson", "feature": "QLD_STATE_POLYGON_shp_GDA2020" }
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#e6f2ff",
+        "stroke": "#2563eb",
+        "strokeWidth": 1.2
+      }
+    },
+
+    {
+      "name": "crash-points",
+      "data": {
+        "url": "data/crash_data_queensland_1_crash_locations.csv"
+      },
+      "transform": [
+        { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
+        { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" }
+        , { "calculate": "datum.Count_Casualty_Total <= 1 ? '0-1' : datum.Count_Casualty_Total <= 3 ? '2-3' : datum.Count_Casualty_Total <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" }
+        , { "filter": { "param": "severitySel" } }
+        , { "filter": "casBucket == 'All' || datum.Casualty_Bucket == casBucket" }
+      ],
+      "mark": { "type": "circle", "opacity": 0.75 },
+      "encoding": {
+        "longitude": { "field": "Crash_Longitude", "type": "quantitative" },
+        "latitude":  { "field": "Crash_Latitude",  "type": "quantitative" },
+
+        "size": {
+          "field": "Count_Casualty_Total",
+          "type": "quantitative",
+          "title": "Casualties",
+          "scale": { "range": [12, 320] }
+        },
+
+        "color": {
+          "field": "Crash_Severity",
+          "type": "nominal",
+          "title": "Severity",
+          "legend": { "orient": "bottom" }
+        },
+
+        "tooltip": [
+          { "field": "Crash_Ref_Number", "title": "Ref" },
+          { "field": "Crash_Severity", "title": "Severity" },
+          { "field": "Crash_Year", "title": "Year" },
+          { "field": "Crash_Month", "title": "Month" },
+          { "field": "Crash_Day_Of_Week", "title": "Day" },
+          { "field": "Crash_Nature", "title": "Nature" },
+          { "field": "Crash_Type", "title": "Type" },
+          { "field": "Loc_Suburb", "title": "Suburb" },
+          { "field": "Loc_Local_Government_Area", "title": "LGA" },
+          { "field": "Count_Casualty_Total", "title": "Total casualties" }
+        ]
+      }
+    }
+  ],
+
+  "config": {
+    "view": { "stroke": null },
+    "legend": {
+      "labelFontSize": 12,
+      "titleFontSize": 12,
+      "padding": 8
+    },
+    "axis": {
+      "labelFontSize": 11,
+      "titleFontSize": 12
+    }
+  }
+}

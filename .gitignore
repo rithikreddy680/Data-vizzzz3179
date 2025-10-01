@@ -1,0 +1,12 @@
+# Ignore large or local data files
+data/crash_data_queensland_1_crash_locations.csv
+# Optionally ignore all CSVs in data (uncomment if desired)
+# data/*.csv
+
+# Node/npm artifacts (if any get used locally)
+node_modules/
+npm-debug.log*
+
+# OS-specific
+Thumbs.db
+.DS_Store

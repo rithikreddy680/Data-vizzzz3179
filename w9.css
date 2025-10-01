@@ -1,0 +1,41 @@
+:root {
+  --maxw: 1100px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+header, main, footer {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  margin: 12px 0 4px;
+  font-size: 1.75rem;
+}
+
+#map {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  padding: 12px;
+}
+
+.vega-embed .vega-actions a {
+  text-decoration: none;
+  color: #334155;
+}
+
+@media (max-width: 768px) {
+  #map { padding: 8px; }
+}
