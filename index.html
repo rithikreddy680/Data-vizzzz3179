@@ -6,8 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="refresh" content="0; url=hw2.html" />
   <link rel="canonical" href="hw2.html" />
+  <script>
+    // Belt-and-suspenders: force redirect via JS in case a cached meta refresh misbehaves
+    (function () {
+      var target = 'hw2.html';
+      var here = location.pathname + location.search + location.hash;
+      if (!/hw2\.html(\?|#|$)/.test(here)) {
+        // small delay so the DOM paints the fallback link for a moment
+        setTimeout(function(){ location.replace(target); }, 30);
+      }
+    })();
+  </script>
 </head>
 <body>
   <p>Redirecting to <a href="hw2.html">hw2.html</a>…</p>
+  <noscript>
+    <p><strong>JavaScript is disabled.</strong> Please open <a href="hw2.html">hw2.html</a>.</p>
+  </noscript>
 </body>
 </html>
