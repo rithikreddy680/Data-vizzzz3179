@@ -31,6 +31,15 @@ h1 {
   padding: 12px;
 }
 
+.viz #monthly, #monthly {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  padding: 12px;
+}
+
+.viz h2 { margin: 16px 0 8px; }
+
 .vega-embed .vega-actions a {
   text-decoration: none;
   color: #334155;
