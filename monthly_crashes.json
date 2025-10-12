@@ -1,0 +1,138 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Monthly crash counts in Queensland by severity with legend-based filtering and peak month annotations.",
+  "width": 900,
+  "height": 400,
+
+  "params": [
+    {
+      "name": "severitySel2",
+      "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
+      "bind": "legend"
+    }
+  ],
+
+  "data": { "url": "data/crash_data_queensland_1_crash_locations-2.csv" },
+  "transform": [
+    { "filter": { "param": "severitySel2" } }
+  ],
+
+  "layer": [
+    {
+      "transform": [
+        { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
+        { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
+        { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
+        { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["MonthName", "Crash_Severity"] },
+        { "joinaggregate": [{ "op": "sum", "field": "CrashCount", "as": "MonthTotal" }], "groupby": ["MonthName"] },
+        { "calculate": "datum.CrashCount / datum.MonthTotal", "as": "Share" }
+      ],
+      "mark": { "type": "bar" },
+      "encoding": {
+        "x": {
+          "field": "MonthName",
+          "type": "ordinal",
+          "sort": [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ],
+          "title": "Month"
+        },
+        "y": { "field": "CrashCount", "type": "quantitative", "title": "Crash count" },
+        "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "scale": { "scheme": "tableau10" } },
+        "tooltip": [
+          { "field": "MonthName", "type": "nominal", "title": "Month" },
+          { "field": "Crash_Severity", "type": "nominal", "title": "Severity" },
+          { "field": "CrashCount", "type": "quantitative", "title": "Crashes" },
+          { "field": "MonthTotal", "type": "quantitative", "title": "Month total" },
+          { "field": "Share", "type": "quantitative", "title": "Share of month", "format": ".0%" }
+        ]
+      }
+    },
+    {
+      "transform": [
+        { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
+        { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
+        { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
+        { "aggregate": [{ "op": "count", "as": "TotalCrashes" }], "groupby": ["MonthName"] }
+      ],
+      "mark": { "type": "line", "color": "#334155", "strokeWidth": 2, "opacity": 0.9, "point": true },
+      "encoding": {
+        "x": {
+          "field": "MonthName",
+          "type": "ordinal",
+          "sort": [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ]
+        },
+        "y": { "field": "TotalCrashes", "type": "quantitative" },
+        "tooltip": [
+          { "field": "MonthName", "title": "Month" },
+          { "field": "TotalCrashes", "title": "Total" }
+        ]
+      }
+    },
+    {
+      "transform": [
+        { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
+        { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
+        { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
+        { "aggregate": [{ "op": "count", "as": "TotalCrashes" }], "groupby": ["MonthName"] },
+        { "aggregate": [{ "op": "mean", "field": "TotalCrashes", "as": "AvgTotal" }] }
+      ],
+      "mark": { "type": "rule", "color": "#10b981", "strokeWidth": 2, "opacity": 0.8 },
+      "encoding": { "y": { "field": "AvgTotal", "type": "quantitative", "title": null } }
+    },
+    {
+      "transform": [
+        { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
+        { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
+        { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
+        { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["MonthName"] },
+        { "window": [{ "op": "rank", "as": "rank" }], "sort": [{ "field": "CrashCount", "order": "descending" }] },
+        { "filter": "datum.rank == 1" }
+      ],
+      "mark": { "type": "rule", "color": "#ef4444", "strokeWidth": 2, "opacity": 0.85 },
+      "encoding": {
+        "x": {
+          "field": "MonthName",
+          "type": "ordinal",
+          "sort": [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ]
+        }
+      }
+    },
+    {
+      "transform": [
+        { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
+        { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
+        { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
+        { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["MonthName"] },
+        { "window": [{ "op": "rank", "as": "rank" }], "sort": [{ "field": "CrashCount", "order": "descending" }] },
+        { "filter": "datum.rank == 1" }
+      ],
+      "mark": { "type": "text", "align": "center", "baseline": "bottom", "dy": -6, "fontWeight": "bold", "color": "#ef4444" },
+      "encoding": {
+        "x": {
+          "field": "MonthName",
+          "type": "ordinal",
+          "sort": [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ]
+        },
+        "y": { "field": "CrashCount", "type": "quantitative" },
+        "text": { "value": "Peak month" }
+      }
+    }
+  ],
+
+  "config": {
+    "view": { "stroke": null },
+    "legend": { "orient": "bottom" },
+    "axis": { "labelFontSize": 11, "titleFontSize": 12 }
+  }
+}

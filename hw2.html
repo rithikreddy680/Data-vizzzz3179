@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Homework 2 Visualisations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="w9.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script>
+    // If the primary CDN fails, try a fallback (cdnjs)
+    (function () {
+      function inject(src) {
+        var s = document.createElement('script');
+        s.src = src; s.async = false; document.head.appendChild(s);
+      }
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          if (!window.vega || !window.vegaLite || !window.vegaEmbed) {
+            console.warn('Primary CDN failed to load Vega libs. Trying cdnjs fallback...');
+            inject('https://cdnjs.cloudflare.com/ajax/libs/vega/5.28.0/vega.min.js');
+            inject('https://cdnjs.cloudflare.com/ajax/libs/vega-lite/5.19.0/vega-lite.min.js');
+            inject('https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.24.0/vega-embed.min.js');
+          }
+        }, 50);
+      });
+    })();
+  </script>
+  <style>
+    main { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+    .viz { margin: 1rem 0 2rem; }
+    h2 { margin: .5rem 0; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const opts = { actions: { export: true, source: false, compiled: false, editor: true }, renderer: 'canvas' };
+      const target = document.querySelector('#viz-dashboard');
+      if (target) target.innerHTML = '<p style="margin:8px 0;color:#64748b">Loading dashboard…</p>';
+
+      async function ensureVegaLoaded(maxWaitMs = 5000) {
+        const start = Date.now();
+        while (!(window.vega && window.vegaLite && window.vegaEmbed)) {
+          if (Date.now() - start > maxWaitMs) throw new Error('Vega libraries not loaded');
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
+
+      try {
+        await ensureVegaLoaded();
+        await vegaEmbed('#viz-dashboard', 'combined_dashboard.json', opts);
+      } catch (e) {
+        console.error('Embed error', e);
+        if (target) {
+          target.innerHTML = '<p style="color:#ef4444">Failed to load dashboard. If you are opening this file directly from your file system, please serve it over HTTP (e.g., VS Code Live Server) so the data files can be fetched. If the issue persists, your network might block the CDN; try again or use the fallback below.</p>';
+        }
+        // Fallback: try embedding the two visuals separately
+        const fb = document.getElementById('fallback');
+        if (fb) {
+          fb.style.display = 'block';
+          try {
+            await ensureVegaLoaded();
+            await vegaEmbed('#viz-map', 'w9.json', opts);
+            await vegaEmbed('#viz-monthly', 'monthly_crashes.json', opts);
+          } catch (e2) {
+            console.error('Fallback embed error', e2);
+          }
+        }
+      }
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Interactive Visualisations</h1>
+    <p>Map (Week 9) + New monthly crashes chart with tooltips, annotations, and legend selection.</p>
+  </header>
+
+  <main>
+    <section class="viz">
+      <h2>Dashboard: Map + Monthly Crashes</h2>
+      <div id="viz-dashboard"></div>
+    </section>
+    <section id="fallback" class="viz" style="display:none">
+      <h2>Fallback: Separate Visualisations</h2>
+      <div style="margin:12px 0">
+        <h3 style="margin:6px 0">Crash Map (Week 9)</h3>
+        <div id="viz-map"></div>
+      </div>
+      <div style="margin:12px 0">
+        <h3 style="margin:6px 0">Monthly Crashes by Severity</h3>
+        <div id="viz-monthly"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Built with Vega-Lite.</small>
+  </footer>
+</body>
+</html>
