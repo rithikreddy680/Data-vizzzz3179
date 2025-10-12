@@ -1,0 +1,89 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Yearly crash trend with legend filtering and year-range sliders, including peak-year and mean annotations.",
+  "width": 900,
+  "height": 320,
+
+  "data": { "url": "data/crash_data_queensland_1_crash_locations-2.csv" },
+
+  "params": [
+    {
+      "name": "severitySel3",
+      "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
+      "bind": "legend"
+    },
+    {
+      "name": "yearMin",
+      "value": 2000,
+      "bind": { "input": "range", "min": 1990, "max": 2030, "step": 1, "name": "Year min: " }
+    },
+    {
+      "name": "yearMax",
+      "value": 2025,
+      "bind": { "input": "range", "min": 1990, "max": 2030, "step": 1, "name": "Year max: " }
+    }
+  ],
+
+  "transform": [
+    { "filter": { "param": "severitySel3" } },
+    { "filter": "isValid(datum.Crash_Year) && toNumber(datum.Crash_Year) >= yearMin && toNumber(datum.Crash_Year) <= yearMax" }
+  ],
+
+  "layer": [
+    {
+      "transform": [
+        { "aggregate": [{ "op": "count", "as": "Total" }], "groupby": ["Crash_Year", "Crash_Severity"] },
+        { "aggregate": [{ "op": "sum", "field": "Total", "as": "TotalCrashes" }], "groupby": ["Crash_Year"] }
+      ],
+      "mark": { "type": "line", "point": true },
+      "encoding": {
+        "x": { "field": "Crash_Year", "type": "quantitative", "title": "Year" },
+        "y": { "field": "TotalCrashes", "type": "quantitative", "title": "Crashes" },
+        "color": { "value": "#2563eb" },
+        "tooltip": [
+          { "field": "Crash_Year", "type": "quantitative", "title": "Year" },
+          { "field": "TotalCrashes", "type": "quantitative", "title": "Crashes" }
+        ]
+      }
+    },
+    {
+      "transform": [
+        { "aggregate": [{ "op": "count", "as": "Total" }], "groupby": ["Crash_Year", "Crash_Severity"] },
+        { "aggregate": [{ "op": "sum", "field": "Total", "as": "TotalCrashes" }], "groupby": ["Crash_Year"] },
+        { "aggregate": [{ "op": "mean", "field": "TotalCrashes", "as": "AvgCrashes" }] }
+      ],
+      "mark": { "type": "rule", "color": "#10b981", "strokeWidth": 2, "opacity": 0.85 },
+      "encoding": { "y": { "field": "AvgCrashes", "type": "quantitative", "title": null } }
+    },
+    {
+      "transform": [
+        { "aggregate": [{ "op": "count", "as": "Total" }], "groupby": ["Crash_Year", "Crash_Severity"] },
+        { "aggregate": [{ "op": "sum", "field": "Total", "as": "TotalCrashes" }], "groupby": ["Crash_Year"] },
+        { "window": [{ "op": "rank", "as": "rk" }], "sort": [{ "field": "TotalCrashes", "order": "descending" }] },
+        { "filter": "datum.rk == 1" }
+      ],
+      "mark": { "type": "rule", "color": "#ef4444", "strokeWidth": 2, "opacity": 0.9 },
+      "encoding": { "x": { "field": "Crash_Year", "type": "quantitative" } }
+    },
+    {
+      "transform": [
+        { "aggregate": [{ "op": "count", "as": "Total" }], "groupby": ["Crash_Year", "Crash_Severity"] },
+        { "aggregate": [{ "op": "sum", "field": "Total", "as": "TotalCrashes" }], "groupby": ["Crash_Year"] },
+        { "window": [{ "op": "rank", "as": "rk" }], "sort": [{ "field": "TotalCrashes", "order": "descending" }] },
+        { "filter": "datum.rk == 1" }
+      ],
+      "mark": { "type": "text", "align": "left", "baseline": "bottom", "dx": 4, "dy": -4, "fontWeight": "bold", "color": "#ef4444" },
+      "encoding": {
+        "x": { "field": "Crash_Year", "type": "quantitative" },
+        "y": { "field": "TotalCrashes", "type": "quantitative" },
+        "text": { "value": "Peak year" }
+      }
+    }
+  ],
+
+  "config": {
+    "view": { "stroke": null },
+    "legend": { "orient": "bottom" },
+    "axis": { "labelFontSize": 11, "titleFontSize": 12 }
+  }
+}

@@ -17,6 +17,16 @@
         "labels": ["All casualties", "0-1", "2-3", "4-5", "6+"],
         "name": "Casualties: "
       }
+    },
+    {
+      "name": "yearMin",
+      "value": 2000,
+      "bind": { "input": "range", "min": 1990, "max": 2030, "step": 1, "name": "Year min: " }
+    },
+    {
+      "name": "yearMax",
+      "value": 2025,
+      "bind": { "input": "range", "min": 1990, "max": 2030, "step": 1, "name": "Year max: " }
     }
   ],
 
@@ -76,8 +86,12 @@
     {
       "width": 900,
       "height": 400,
-  "data": { "url": "data/crash_data_queensland_1_crash_locations-2.csv" },
-      "transform": [ { "filter": { "param": "severitySel" } } ],
+      "data": { "url": "data/crash_data_queensland_1_crash_locations-2.csv" },
+      "transform": [
+        { "filter": { "param": "severitySel" } },
+        { "calculate": "datum.Count_Casualty_Total <= 1 ? '0-1' : datum.Count_Casualty_Total <= 3 ? '2-3' : datum.Count_Casualty_Total <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" },
+        { "filter": "casBucket == 'All' || datum.Casualty_Bucket == casBucket" }
+      ],
       "layer": [
         {
           "transform": [
