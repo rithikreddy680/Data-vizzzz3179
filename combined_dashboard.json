@@ -104,8 +104,7 @@
         "anchor": "start",
         "subtitle": [
           "Each dot is a crash location. Size encodes total casualties (integers), color encodes severity.",
-          "Use the Severity dropdown above to filter; use the legend (right) to highlight categories.",
-          "LGA labels mark the 10 areas with the most crashes under the current filters."
+          "Use the Severity dropdown above to filter; use the legend (right) to highlight categories."
         ]
       },
       "projection": { "type": "mercator" },
@@ -164,39 +163,6 @@
               { "field": "Loc_Suburb", "title": "Suburb" },
               { "field": "Loc_Local_Government_Area", "title": "LGA" },
               { "field": "CasTotalInt", "title": "Total casualties", "format": ",d" }
-            ]
-          }
-        },
-        {
-          "name": "lga-labels",
-          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
-          "transform": [
-            { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
-            { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
-            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
-            { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
-            { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
-            { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
-            { "calculate": "floor(toNumber(datum.Count_Casualty_Total))", "as": "CasTotalInt" },
-            { "filter": "casBucket == 'All' || (casBucket == '1' && datum.CasTotalInt == 1) || (casBucket == '2-5' && datum.CasTotalInt >= 2 && datum.CasTotalInt <= 5) || (casBucket == '5-10' && datum.CasTotalInt >= 5 && datum.CasTotalInt <= 10) || (casBucket == '10-15' && datum.CasTotalInt >= 10 && datum.CasTotalInt <= 15) || (casBucket == '15-20' && datum.CasTotalInt >= 15 && datum.CasTotalInt <= 20) || (casBucket == '20+' && datum.CasTotalInt >= 20)" },
-            { "aggregate": [
-                { "op": "count", "as": "LgaTotal" },
-                { "op": "mean", "field": "Crash_Longitude", "as": "Lon" },
-                { "op": "mean", "field": "Crash_Latitude", "as": "Lat" }
-              ],
-              "groupby": ["Loc_Local_Government_Area"]
-            },
-            { "window": [{ "op": "rank", "as": "rank" }], "sort": [{ "field": "LgaTotal", "order": "descending" }] },
-            { "filter": "datum.rank <= 10" }
-          ],
-          "mark": { "type": "text", "fontSize": 10, "fontWeight": "bold", "fill": "#111827", "stroke": "white", "strokeWidth": 2 },
-          "encoding": {
-            "longitude": { "field": "Lon", "type": "quantitative" },
-            "latitude": { "field": "Lat", "type": "quantitative" },
-            "text": { "field": "Loc_Local_Government_Area" },
-            "tooltip": [
-              { "field": "Loc_Local_Government_Area", "title": "LGA" },
-              { "field": "LgaTotal", "title": "Crashes", "format": ",d" }
             ]
           }
         }
