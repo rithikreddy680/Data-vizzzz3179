@@ -351,7 +351,7 @@
       "height": 500,
       "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
       "title": {
-        "text": "Top 15 LGAs by Crash Count",
+        "text": "Top LGAs by Crash Count",
         "anchor": "start",
         "subtitle": [
           "LGAs are ranked by crash count and stacked by severity to show composition.",
