@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Combined dashboard: Queensland crash map and monthly crashes bar chart with shared legend selection and casualties filter.",
+  "description": "Combined dashboard: Queensland crash map, monthly crashes by severity, and top LGAs by crash count. Shared legend selection (severity) and casualties filter.",
   "config": {
     "view": { "stroke": null },
     "legend": { "orient": "bottom", "labelFontSize": 12, "titleFontSize": 12, "padding": 8 },
@@ -9,14 +9,89 @@
 
   "params": [
     {
+      "name": "sevTop",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All", "Fatal", "Hospital", "Medical", "Minor", "Property"],
+        "labels": ["All severities", "Fatal", "Hospitalisation", "Medical Treatment", "Minor Injury", "Property Damage Only"],
+        "name": "Severity: ",
+        "element": "#controls"
+      }
+    },
+    
+    {
+      "name": "lgaSelect",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": [
+          "All",
+          "Brisbane",
+          "Gold Coast",
+          "Sunshine Coast",
+          "Logan",
+          "Moreton Bay",
+          "Townsville",
+          "Cairns",
+          "Ipswich",
+          "Toowoomba",
+          "Redland",
+          "Mackay",
+          "Rockhampton",
+          "Bundaberg",
+          "Fraser Coast",
+          "Noosa",
+          "Gladstone",
+          "Gympie",
+          "Scenic Rim",
+          "Whitsunday",
+          "Central Highlands"
+        ],
+        "name": "LGA: ",
+        "element": "#controls"
+      }
+    },
+    {
+      "name": "typeFilter",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All","Head-on","Rear-end","Angle","Sideswipe","Hit object","Overturned","Pedestrian","Other"],
+        "name": "Crash Type: ",
+        "element": "#controls"
+      }
+    },
+    {
+      "name": "natureFilter",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All","Collision","Rollover","Run-off road","Hit animal","Level crossing","Other"],
+        "name": "Crash Nature: ",
+        "element": "#controls"
+      }
+    },
+    {
       "name": "casBucket",
       "value": "All",
       "bind": {
         "input": "select",
-        "options": ["All", "0-1", "2-3", "4-5", "6+"],
-        "labels": ["All casualties", "0-1", "2-3", "4-5", "6+"],
-        "name": "Casualties: "
+        "options": ["All", "1", "2-5", "5-10", "10-15", "15-20", "20+"],
+        "labels": ["All casualties", "1", "2-5", "5-10", "10-15", "15-20", "20+"],
+        "name": "Casualties: ",
+        "element": "#controls"
       }
+    },
+    {
+      "name": "yearStart",
+      "value": 2000,
+      "bind": { "input": "range", "name": "Year from: ", "min": 2000, "max": 2025, "step": 1, "element": "#controls" }
+    },
+    {
+      "name": "yearEnd",
+      "value": 2025,
+      "bind": { "input": "range", "name": "Year to: ", "min": 2000, "max": 2025, "step": 1, "element": "#controls" }
     }
   ],
 
@@ -24,6 +99,15 @@
     {
       "width": 900,
       "height": 700,
+      "title": {
+        "text": "Crash Locations Across Queensland",
+        "anchor": "start",
+        "subtitle": [
+          "Each dot is a crash location. Size encodes total casualties (integers), color encodes severity.",
+          "Use the Severity dropdown above to filter; use the legend (right) to highlight categories.",
+          "LGA labels mark the 10 areas with the most crashes under the current filters."
+        ]
+      },
       "projection": { "type": "mercator" },
       "layer": [
         {
@@ -36,7 +120,7 @@
         },
         {
           "name": "crash-points",
-          "data": { "url": "data/crash_data_queensland_1_crash_locations - Copy.csv" },
+          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
           "params": [
             {
               "name": "severitySel",
@@ -47,16 +131,28 @@
           "transform": [
             { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
             { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" },
-            { "calculate": "datum.Count_Casualty_Total <= 1 ? '0-1' : datum.Count_Casualty_Total <= 3 ? '2-3' : datum.Count_Casualty_Total <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" },
-            { "filter": { "param": "severitySel" } },
-            { "filter": "casBucket == 'All' || datum.Casualty_Bucket == casBucket" }
+            { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
+            { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
+            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
+            { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
+            { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
+            { "calculate": "floor(toNumber(datum.Count_Casualty_Total))", "as": "CasTotalInt" },
+            { "filter": "casBucket == 'All' || (casBucket == '1' && datum.CasTotalInt == 1) || (casBucket == '2-5' && datum.CasTotalInt >= 2 && datum.CasTotalInt <= 5) || (casBucket == '5-10' && datum.CasTotalInt >= 5 && datum.CasTotalInt <= 10) || (casBucket == '10-15' && datum.CasTotalInt >= 10 && datum.CasTotalInt <= 15) || (casBucket == '15-20' && datum.CasTotalInt >= 15 && datum.CasTotalInt <= 20) || (casBucket == '20+' && datum.CasTotalInt >= 20)" }
           ],
-          "mark": { "type": "circle", "opacity": 0.75 },
+          "mark": { "type": "circle" },
           "encoding": {
             "longitude": { "field": "Crash_Longitude", "type": "quantitative" },
             "latitude": { "field": "Crash_Latitude", "type": "quantitative" },
-            "size": { "field": "Count_Casualty_Total", "type": "quantitative", "title": "Casualties", "scale": { "range": [12, 320] } },
-            "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity" },
+            "size": {
+              "field": "CasTotalInt",
+              "type": "quantitative",
+              "title": "Casualties (size)",
+              "scale": { "domain": [1, 25], "range": [40, 380] },
+              "legend": { "values": [1, 2, 3, 4, 5, 10, 15, 20], "format": ",d", "symbolType": "circle", "orient": "left" }
+            },
+            "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity (click to filter)", "scale": { "scheme": "tableau10" }, "legend": { "orient": "right" } },
+            "opacity": { "condition": { "param": "severitySel", "value": 0.95 }, "value": 0.2 },
             "tooltip": [
               { "field": "Crash_Ref_Number", "title": "Ref" },
               { "field": "Crash_Severity", "title": "Severity" },
@@ -67,7 +163,40 @@
               { "field": "Crash_Type", "title": "Type" },
               { "field": "Loc_Suburb", "title": "Suburb" },
               { "field": "Loc_Local_Government_Area", "title": "LGA" },
-              { "field": "Count_Casualty_Total", "title": "Total casualties" }
+              { "field": "CasTotalInt", "title": "Total casualties", "format": ",d" }
+            ]
+          }
+        },
+        {
+          "name": "lga-labels",
+          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+          "transform": [
+            { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
+            { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
+            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
+            { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
+            { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
+            { "calculate": "floor(toNumber(datum.Count_Casualty_Total))", "as": "CasTotalInt" },
+            { "filter": "casBucket == 'All' || (casBucket == '1' && datum.CasTotalInt == 1) || (casBucket == '2-5' && datum.CasTotalInt >= 2 && datum.CasTotalInt <= 5) || (casBucket == '5-10' && datum.CasTotalInt >= 5 && datum.CasTotalInt <= 10) || (casBucket == '10-15' && datum.CasTotalInt >= 10 && datum.CasTotalInt <= 15) || (casBucket == '15-20' && datum.CasTotalInt >= 15 && datum.CasTotalInt <= 20) || (casBucket == '20+' && datum.CasTotalInt >= 20)" },
+            { "aggregate": [
+                { "op": "count", "as": "LgaTotal" },
+                { "op": "mean", "field": "Crash_Longitude", "as": "Lon" },
+                { "op": "mean", "field": "Crash_Latitude", "as": "Lat" }
+              ],
+              "groupby": ["Loc_Local_Government_Area"]
+            },
+            { "window": [{ "op": "rank", "as": "rank" }], "sort": [{ "field": "LgaTotal", "order": "descending" }] },
+            { "filter": "datum.rank <= 10" }
+          ],
+          "mark": { "type": "text", "fontSize": 10, "fontWeight": "bold", "fill": "#111827", "stroke": "white", "strokeWidth": 2 },
+          "encoding": {
+            "longitude": { "field": "Lon", "type": "quantitative" },
+            "latitude": { "field": "Lat", "type": "quantitative" },
+            "text": { "field": "Loc_Local_Government_Area" },
+            "tooltip": [
+              { "field": "Loc_Local_Government_Area", "title": "LGA" },
+              { "field": "LgaTotal", "title": "Crashes", "format": ",d" }
             ]
           }
         }
@@ -76,16 +205,35 @@
     {
       "width": 900,
       "height": 400,
-      "data": { "url": "data/crash_data_queensland_1_crash_locations-2.csv" },
+      "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+      "title": {
+        "text": "Monthly Crashes by Severity",
+        "anchor": "start",
+        "subtitle": [
+          "Stacked bars show crash counts per month, split by severity. The dark line overlays total monthly crashes.",
+          "The green rule marks the mean monthly total; the red label highlights the peak month under the current filters.",
+          "Hover bars for totals and share within month."
+        ]
+      },
       "transform": [
-        { "filter": { "param": "severitySel" } },
+        { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
+        { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
+  { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+  { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
+  { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
+  { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
         { "calculate": "datum.Count_Casualty_Total || datum.Total_Casualties || datum.Casualties || datum['Count Casualty Total'] || datum.count_casualty_total", "as": "CasTotalRaw" },
-        { "calculate": "toNumber(datum.CasTotalRaw)", "as": "CasTotal" },
-        { "calculate": "isValid(datum.CasTotal) && datum.CasTotal <= 1 ? '0-1' : isValid(datum.CasTotal) && datum.CasTotal <= 3 ? '2-3' : isValid(datum.CasTotal) && datum.CasTotal <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" },
-        { "filter": "casBucket == 'All' || datum.Casualty_Bucket == casBucket" }
+        { "calculate": "floor(toNumber(datum.CasTotalRaw))", "as": "CasTotalInt" },
+        { "filter": "casBucket == 'All' || (casBucket == '1' && datum.CasTotalInt == 1) || (casBucket == '2-5' && datum.CasTotalInt >= 2 && datum.CasTotalInt <= 5) || (casBucket == '5-10' && datum.CasTotalInt >= 5 && datum.CasTotalInt <= 10) || (casBucket == '10-15' && datum.CasTotalInt >= 10 && datum.CasTotalInt <= 15) || (casBucket == '15-20' && datum.CasTotalInt >= 15 && datum.CasTotalInt <= 20) || (casBucket == '20+' && datum.CasTotalInt >= 20)" }
       ],
       "layer": [
         {
+          "params": [
+            {
+              "name": "severitySel",
+              "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true }
+            }
+          ],
           "transform": [
             { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
             { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
@@ -107,11 +255,12 @@
             },
             "y": { "field": "CrashCount", "type": "quantitative", "title": "Crash count" },
             "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "legend": null, "scale": { "scheme": "tableau10" } },
+            "opacity": { "condition": { "param": "severitySel", "value": 1 }, "value": 0.25 },
             "tooltip": [
               { "field": "MonthName", "type": "nominal", "title": "Month" },
               { "field": "Crash_Severity", "type": "nominal", "title": "Severity" },
-              { "field": "CrashCount", "type": "quantitative", "title": "Crashes" },
-              { "field": "MonthTotal", "type": "quantitative", "title": "Month total" },
+              { "field": "CrashCount", "type": "quantitative", "title": "Crashes", "format": ",d" },
+              { "field": "MonthTotal", "type": "quantitative", "title": "Month total", "format": ",d" },
               { "field": "Share", "type": "quantitative", "title": "Share of month", "format": ".0%" }
             ]
           }
@@ -133,10 +282,10 @@
                 "July", "August", "September", "October", "November", "December"
               ]
             },
-            "y": { "field": "TotalCrashes", "type": "quantitative" },
+            "y": { "field": "TotalCrashes", "type": "quantitative", "title": "Total crashes (line)" },
             "tooltip": [
               { "field": "MonthName", "title": "Month" },
-              { "field": "TotalCrashes", "title": "Total" }
+              { "field": "TotalCrashes", "title": "Total", "format": ",d" }
             ]
           }
         },
@@ -196,6 +345,54 @@
           }
         }
       ]
+    },
+    {
+      "width": 900,
+      "height": 500,
+      "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+      "title": {
+        "text": "Top 15 LGAs by Crash Count",
+        "anchor": "start",
+        "subtitle": [
+          "LGAs are ranked by crash count and stacked by severity to show composition.",
+          "Legend selections and Casualties/Year filters re-rank hotspots and update severity mix.",
+          "Hover to see totals per LGA and severity."
+        ]
+      },
+      "params": [
+        {
+          "name": "severitySel",
+          "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true }
+        }
+      ],
+      "transform": [
+        { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
+        { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
+  { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+  { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
+  { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
+  { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
+        { "calculate": "datum.Count_Casualty_Total || datum.Total_Casualties || datum.Casualties || datum['Count Casualty Total'] || datum.count_casualty_total", "as": "CasTotalRaw" },
+        { "calculate": "floor(toNumber(datum.CasTotalRaw))", "as": "CasTotalInt" },
+        { "filter": "casBucket == 'All' || (casBucket == '1' && datum.CasTotalInt == 1) || (casBucket == '2-5' && datum.CasTotalInt >= 2 && datum.CasTotalInt <= 5) || (casBucket == '5-10' && datum.CasTotalInt >= 5 && datum.CasTotalInt <= 10) || (casBucket == '10-15' && datum.CasTotalInt >= 10 && datum.CasTotalInt <= 15) || (casBucket == '15-20' && datum.CasTotalInt >= 15 && datum.CasTotalInt <= 20) || (casBucket == '20+' && datum.CasTotalInt >= 20)" },
+        { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["Loc_Local_Government_Area", "Crash_Severity"] },
+        { "joinaggregate": [{ "op": "sum", "field": "CrashCount", "as": "LgaTotal" }], "groupby": ["Loc_Local_Government_Area"] },
+        { "window": [{ "op": "rank", "as": "rank" }], "sort": [{ "field": "LgaTotal", "order": "descending" }] },
+        { "filter": "datum.rank <= 15" }
+      ],
+      "mark": { "type": "bar" },
+      "encoding": {
+        "y": { "field": "Loc_Local_Government_Area", "type": "nominal", "sort": "-x", "title": "Local Government Area" },
+        "x": { "field": "CrashCount", "type": "quantitative", "title": "Crashes" },
+        "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "legend": null, "scale": { "scheme": "tableau10" } },
+        "opacity": { "condition": { "param": "severitySel", "value": 1 }, "value": 0.25 },
+        "tooltip": [
+          { "field": "Loc_Local_Government_Area", "title": "LGA" },
+          { "field": "Crash_Severity", "title": "Severity" },
+          { "field": "CrashCount", "title": "Crashes", "format": ",d" },
+          { "field": "LgaTotal", "title": "LGA total", "format": ",d" }
+        ]
+      }
     }
   ]
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Homework 2 Visualisations</title>
+  <title>Queensland Road Crashes — Interactive Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="w9.css" />
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
@@ -54,48 +54,43 @@
         if (target) {
           target.innerHTML = '<p style="color:#ef4444">Failed to load dashboard. If you are opening this file directly from your file system, please serve it over HTTP (e.g., VS Code Live Server) so the data files can be fetched. If the issue persists, your network might block the CDN; try again or use the fallback below.</p>';
         }
-        // Fallback: try embedding the two visuals separately
-        const fb = document.getElementById('fallback');
-        if (fb) {
-          fb.style.display = 'block';
-          try {
-            await ensureVegaLoaded();
-            await vegaEmbed('#viz-map', 'w9.json', opts);
-            await vegaEmbed('#viz-monthly', 'monthly_crashes.json', opts);
-          } catch (e2) {
-            console.error('Fallback embed error', e2);
-          }
-        }
+        // Fallback removed: dashboard is consolidated into a single spec (combined_dashboard.json)
       }
     });
   </script>
 </head>
 <body>
   <header>
-    <h1>Interactive Visualisations</h1>
-    <p>Map (Week 9) + New monthly crashes chart with tooltips, annotations, and legend selection.</p>
+    <h1>Queensland Road Crashes — Interactive Dashboard</h1>
+    <p>
+      Explore where and when crashes occur across Queensland, how severity varies through the year,
+      and which Local Government Areas (LGAs) are most affected. Use the legend to focus on specific
+      severities and the Casualties and Year filters to adjust the scope. Hover for details.
+    </p>
+    <p style="color:#64748b;margin-top:.25rem">Powered by Vega, Vega-Lite, and vega-embed toolkits.</p>
   </header>
 
   <main>
     <section class="viz">
-      <h2>Dashboard: Map + Monthly Crashes</h2>
+      <h2>Queensland Crash Locations, Seasonality, and LGA Hotspots</h2>
+      <div id="controls" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin:.25rem 0 1rem;padding:.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px"></div>
       <div id="viz-dashboard"></div>
+      
     </section>
-    <section id="fallback" class="viz" style="display:none">
-      <h2>Fallback: Separate Visualisations</h2>
-      <div style="margin:12px 0">
-        <h3 style="margin:6px 0">Crash Map (Week 9)</h3>
-        <div id="viz-map"></div>
-      </div>
-      <div style="margin:12px 0">
-        <h3 style="margin:6px 0">Monthly Crashes by Severity</h3>
-        <div id="viz-monthly"></div>
-      </div>
-    </section>
+    
   </main>
 
   <footer>
-    <small>Built with Vega-Lite.</small>
+    <div style="max-width:1100px;margin:0 auto;padding:0 1rem 1.5rem;color:#475569">
+      <h3 style="margin:.5rem 0 .25rem">Notes and assumptions</h3>
+      <ul style="margin:.25rem 0 .25rem 1rem">
+        <li>Casualties are integers; the filter buckets are derived using floor values (0–1, 2–3, 4–5, 6+).</li>
+        <li>Year range controls filter all visuals; severity legend selection is shared.</li>
+        <li>Monthly totals are annotated with mean and the peak month to highlight seasonality.</li>
+        <li>LGA labels on the map indicate the 10 highest-crash LGAs by current filters; bar chart shows top 15.</li>
+        <li>Data source: crash_data_queensland_1_crash_locations.csv.</li>
+      </ul>
+    </div>
   </footer>
 </body>
 </html>

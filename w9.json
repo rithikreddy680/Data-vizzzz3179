@@ -35,7 +35,7 @@
     {
       "name": "crash-points",
       "data": {
-        "url": "data/crash_data_queensland_1_crash_locations - Copy.csv"
+        "url": "data/crash_data_queensland_1_crash_locations.csv"
       },
       "params": [
         {
@@ -47,7 +47,9 @@
       "transform": [
         { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
         { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" }
-        , { "calculate": "datum.Count_Casualty_Total <= 1 ? '0-1' : datum.Count_Casualty_Total <= 3 ? '2-3' : datum.Count_Casualty_Total <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" }
+        , { "calculate": "floor(toNumber(datum.Count_Casualty_Total))", "as": "CasTotalInt" }
+        , { "calculate": "datum.CasTotalInt > 0 ? 1 : 0", "as": "Cas01" }
+        , { "calculate": "isValid(datum.CasTotalInt) && datum.CasTotalInt <= 1 ? '0-1' : isValid(datum.CasTotalInt) && datum.CasTotalInt <= 3 ? '2-3' : isValid(datum.CasTotalInt) && datum.CasTotalInt <= 5 ? '4-5' : '6+'", "as": "Casualty_Bucket" }
         , { "filter": { "param": "severitySel" } }
         , { "filter": "casBucket == 'All' || datum.Casualty_Bucket == casBucket" }
       ],
@@ -57,17 +59,19 @@
         "latitude":  { "field": "Crash_Latitude",  "type": "quantitative" },
 
         "size": {
-          "field": "Count_Casualty_Total",
+          "field": "Cas01",
           "type": "quantitative",
           "title": "Casualties",
-          "scale": { "range": [12, 320] }
+          "scale": { "domain": [0, 1], "range": [60, 360] },
+          "legend": { "values": [0, 1], "format": "d" }
         },
 
         "color": {
           "field": "Crash_Severity",
           "type": "nominal",
           "title": "Severity",
-          "legend": { "orient": "bottom" }
+          "legend": { "orient": "bottom" },
+          "scale": { "scheme": "tableau10" }
         },
 
         "tooltip": [
