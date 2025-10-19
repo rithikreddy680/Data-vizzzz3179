@@ -151,7 +151,7 @@
               "scale": { "domain": [1, 25], "range": [40, 380] },
               "legend": { "values": [1, 2, 3, 4, 5, 10, 15, 20], "format": ",d", "symbolType": "circle", "orient": "left" }
             },
-            "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity (click to filter)", "scale": { "scheme": "tableau10" }, "legend": { "orient": "right" } },
+            "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "scale": { "scheme": "tableau10" }, "legend": { "orient": "right" } },
             "opacity": { "condition": { "param": "severitySel", "value": 0.95 }, "value": 0.2 },
             "tooltip": [
               { "field": "Crash_Ref_Number", "title": "Ref" },
