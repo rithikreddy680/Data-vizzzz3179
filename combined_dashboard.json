@@ -57,7 +57,7 @@
       "value": "All",
       "bind": {
         "input": "select",
-        "options": ["All","Head-on","Rear-end","Angle","Sideswipe","Hit object","Overturned","Pedestrian","Other"],
+        "options": ["All","Single vehicle","Multiple vehicle","Pedestrian"],
         "name": "Crash Type: ",
         "element": "#controls"
       }
@@ -67,7 +67,7 @@
       "value": "All",
       "bind": {
         "input": "select",
-        "options": ["All","Collision","Rollover","Run-off road","Hit animal","Level crossing","Other"],
+        "options": ["All","Angle","Sideswipe","Head-on","Rear-end","Hit object","Rollover","Other"],
         "name": "Crash Nature: ",
         "element": "#controls"
       }
