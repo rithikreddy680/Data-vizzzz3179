@@ -149,8 +149,9 @@
             { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
             { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" },
             { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
+            { "calculate": "indexof(lower(datum.Crash_Severity), 'fatal')>=0 ? 'Fatal' : indexof(lower(datum.Crash_Severity), 'hospital')>=0 ? 'Hospital' : indexof(lower(datum.Crash_Severity), 'medical')>=0 ? 'Medical' : indexof(lower(datum.Crash_Severity), 'minor')>=0 ? 'Minor' : 'Property'", "as": "SeverityNorm" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
-            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "filter": "sevTop == 'All' || datum.SeverityNorm == sevTop" },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
@@ -169,23 +170,27 @@
               "legend": { "values": [1, 2, 3, 4, 5, 10, 15, 20], "format": ",d", "symbolType": "circle", "orient": "left" }
             },
             "color": {
-              "field": "Crash_Severity",
+              "field": "SeverityNorm",
               "type": "nominal",
               "title": "Severity",
-              "scale": { "scheme": "tableau10" },
+              "scale": {
+                "domain": ["Fatal", "Hospital", "Medical", "Minor", "Property"],
+                "range": ["#dc2626", "#f97316", "#22c55e", "#3b82f6", "#94a3b8"]
+              },
               "legend": {
                 "orient": "right",
                 "direction": "vertical",
                 "symbolType": "circle",
                 "symbolSize": 120,
                 "padding": 8,
-                "columns": 1
+                "columns": 1,
+                "values": ["Fatal", "Hospital", "Medical", "Minor", "Property"]
               }
             },
             "opacity": { "value": 0.9 },
             "tooltip": [
               { "field": "Crash_Ref_Number", "title": "Ref" },
-              { "field": "Crash_Severity", "title": "Severity" },
+              { "field": "SeverityNorm", "title": "Severity" },
               { "field": "Crash_Year", "title": "Year" },
               { "field": "Crash_Month", "title": "Month" },
               { "field": "Crash_Day_Of_Week", "title": "Day" },
@@ -216,7 +221,8 @@
           "transform": [
             { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
-            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "calculate": "indexof(lower(datum.Crash_Severity), 'fatal')>=0 ? 'Fatal' : indexof(lower(datum.Crash_Severity), 'hospital')>=0 ? 'Hospital' : indexof(lower(datum.Crash_Severity), 'medical')>=0 ? 'Medical' : indexof(lower(datum.Crash_Severity), 'minor')>=0 ? 'Minor' : 'Property'", "as": "SeverityNorm" },
+            { "filter": "sevTop == 'All' || datum.SeverityNorm == sevTop" },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
@@ -230,7 +236,7 @@
                 { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
                 { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
                 { "calculate": "(isValid(datum.MonthIndex) && datum.MonthIndex>=1 && datum.MonthIndex<=12) ? ['January','February','March','April','May','June','July','August','September','October','November','December'][datum.MonthIndex-1] : datum.MonthRaw", "as": "MonthName" },
-                { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["MonthName", "Crash_Severity"] },
+                { "aggregate": [{ "op": "count", "as": "CrashCount" }], "groupby": ["MonthName", "SeverityNorm"] },
                 { "joinaggregate": [{ "op": "sum", "field": "CrashCount", "as": "MonthTotal" }], "groupby": ["MonthName"] },
                 { "calculate": "datum.CrashCount / datum.MonthTotal", "as": "Share" }
               ],
@@ -246,11 +252,20 @@
                   "title": "Month"
                 },
                 "x": { "field": "CrashCount", "type": "quantitative", "title": "Crash count" },
-                "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "legend": null, "scale": { "scheme": "tableau10" } },
+                "color": {
+                  "field": "SeverityNorm",
+                  "type": "nominal",
+                  "title": "Severity",
+                  "legend": null,
+                  "scale": {
+                    "domain": ["Fatal", "Hospital", "Medical", "Minor", "Property"],
+                    "range": ["#dc2626", "#f97316", "#22c55e", "#3b82f6", "#94a3b8"]
+                  }
+                },
                 "opacity": { "value": 0.85 },
                 "tooltip": [
                   { "field": "MonthName", "type": "nominal", "title": "Month" },
-                  { "field": "Crash_Severity", "type": "nominal", "title": "Severity" },
+                  { "field": "SeverityNorm", "type": "nominal", "title": "Severity" },
                   { "field": "CrashCount", "type": "quantitative", "title": "Crashes", "format": ",d" },
                   { "field": "MonthTotal", "type": "quantitative", "title": "Month total", "format": ",d" },
                   { "field": "Share", "type": "quantitative", "title": "Share of month", "format": ".0%" }
@@ -347,7 +362,8 @@
           "transform": [
             { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
-            { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "calculate": "indexof(lower(datum.Crash_Severity), 'fatal')>=0 ? 'Fatal' : indexof(lower(datum.Crash_Severity), 'hospital')>=0 ? 'Hospital' : indexof(lower(datum.Crash_Severity), 'medical')>=0 ? 'Medical' : indexof(lower(datum.Crash_Severity), 'minor')>=0 ? 'Minor' : 'Property'", "as": "SeverityNorm" },
+            { "filter": "sevTop == 'All' || datum.SeverityNorm == sevTop" },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" }
