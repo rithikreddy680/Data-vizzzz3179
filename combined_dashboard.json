@@ -152,6 +152,7 @@
             { "calculate": "indexof(lower(datum.Crash_Severity), 'fatal')>=0 ? 'Fatal' : indexof(lower(datum.Crash_Severity), 'hospital')>=0 ? 'Hospital' : indexof(lower(datum.Crash_Severity), 'medical')>=0 ? 'Medical' : indexof(lower(datum.Crash_Severity), 'minor')>=0 ? 'Minor' : 'Property'", "as": "SeverityNorm" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
             { "filter": "sevTop == 'All' || datum.SeverityNorm == sevTop" },
+            { "filter": { "param": "sevSelect", "empty": true } },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
@@ -232,6 +233,9 @@
           ],
           "layer": [
             {
+              "params": [
+                { "name": "sevSelect", "select": { "type": "point", "fields": ["SeverityNorm"], "toggle": "event.shiftKey" } }
+              ],
               "transform": [
                 { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
                 { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
@@ -262,7 +266,7 @@
                     "range": ["#dc2626", "#f97316", "#22c55e", "#3b82f6", "#94a3b8"]
                   }
                 },
-                "opacity": { "value": 0.85 },
+                "opacity": { "condition": { "param": "sevSelect", "value": 1 }, "value": 0.35 },
                 "tooltip": [
                   { "field": "MonthName", "type": "nominal", "title": "Month" },
                   { "field": "SeverityNorm", "type": "nominal", "title": "Severity" },
