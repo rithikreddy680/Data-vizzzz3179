@@ -143,7 +143,7 @@
         },
         {
           "name": "crash-points",
-          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+          "data": { "url": "data/crash_data_queensland_1_crash_locations_trimmed.csv" },
           
           "transform": [
             { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
@@ -204,7 +204,7 @@
         {
           "width": 400,
           "height": 220,
-          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+          "data": { "url": "data/crash_data_queensland_1_crash_locations_trimmed.csv" },
           "title": {
             "text": "Monthly Crashes by Severity",
             "anchor": "start",
@@ -335,7 +335,7 @@
         {
           "width": 400,
           "height": 280,
-          "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
+          "data": { "url": "data/crash_data_queensland_1_crash_locations_trimmed.csv" },
           "title": {
             "text": "Crash Type × Crash Nature Matrix",
             "anchor": "start",
