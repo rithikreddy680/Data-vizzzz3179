@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <title>Queensland Road Crashes — Interactive Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="rithikreddy680" />
+  <meta name="date" content="2025-10-21" />
   <link rel="stylesheet" href="w9.css" />
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
@@ -75,6 +77,18 @@
     .controls input[type="range"]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background: var(--brand); border:2px solid #fff; }
     /* Labels (names before inputs) */
     .controls label{ color: var(--muted); font-size:.9rem; }
+
+    /* Footer styling */
+    footer.site-footer{ background:#f8fafc; border-top:1px solid var(--line); margin-top: 1.5rem; }
+    .footer-container{ max-width: 1200px; margin:0 auto; padding: 1rem 1rem 1.5rem; color:#475569; }
+    .footer-meta{ display:flex; flex-wrap:wrap; gap:.5rem; justify-content:space-between; align-items:center; margin:.75rem 0; color:#64748b; font-size:.95rem }
+    .footer-heading{ margin:.5rem 0 .25rem; color: var(--ink); }
+    .footer-about p{ margin:.25rem 0; }
+    .footer-notes{ margin:.25rem 0 .25rem 1rem; }
+    .footer-notes li{ margin:.25rem 0; }
+    .footer-container a{ color:#0284c7; text-decoration:none; border-bottom:1px dotted #7dd3fc; }
+    .footer-container a:hover{ color:#0369a1; border-bottom-color:#38bdf8; }
+    .footer-container code{ background:#eef2ff; color:#334155; padding:0 .3em; border-radius:4px; }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -132,13 +146,35 @@
     
   </main>
 
-  <footer>
-    <div style="max-width:1100px;margin:0 auto;padding:0 1rem 1.5rem;color:#475569">
-      <h3 style="margin:.5rem 0 .25rem">Notes and assumptions</h3>
-      <ul style="margin:.25rem 0 .25rem 1rem">
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-meta">
+        <span>Author: <strong>Rithik Reddy </strong></span>
+        <span>Date: <time datetime="2025-10-21">18 Oct 2025</time></span>
+      </div>
+      <div class="footer-about">
+        <h3 class="footer-heading">About this visualisation</h3>
+        <p>
+          An interactive dashboard of Queensland road crashes combining a
+          spatial map of crash locations, a monthly severity trend with a mean reference line,
+          and a Type × Nature heatmap. Filters (Severity, LGA, Type, Nature, Year, Casualties)
+          refine all views, and the legend enables severity focus.
+        </p>
+        <p>
+          To reveal hotspots, seasonality, and high‑risk crash combinations that can
+          inform road safety planning, targeted enforcement, and community awareness.
+        </p>
+      </div>
+      <h3 class="footer-heading">Notes and assumptions</h3>
+      <ul class="footer-notes">
         <li>Year range controls filter all visuals; severity legend selection is shared.</li>
         <li>Monthly totals are annotated with mean and the peak month to highlight seasonality.</li>
-        <li>Data source: </li>
+        <li>
+          Data source: 
+          <a href="https://www.kaggle.com/datasets/joebeachcapital/crash-data-queensland-australia-2001-2022?resource=download&select=crash_data_queensland_d_vehicle_involvement.csv" target="_blank" rel="noopener noreferrer">
+            Kaggle — Crash Data Queensland, Australia (2001–2022)
+          </a>
+        </li>
       </ul>
     </div>
   </footer>
