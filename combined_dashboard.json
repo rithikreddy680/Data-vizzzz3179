@@ -110,12 +110,12 @@
     },
     {
       "name": "yearStart",
-      "value": 2000,
+      "value": 2001,
       "bind": { "input": "range", "name": "Year from: ", "min": 2001, "max": 2021, "step": 1, "element": "#controls-years" }
     },
     {
       "name": "yearEnd",
-      "value": 2025,
+      "value": 2021,
       "bind": { "input": "range", "name": "Year to: ", "min": 2001, "max": 2021, "step": 1, "element": "#controls-years" }
     }
   ],
@@ -144,20 +144,13 @@
         {
           "name": "crash-points",
           "data": { "url": "data/crash_data_queensland_1_crash_locations.csv" },
-          "params": [
-            {
-              "name": "severitySel",
-              "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true },
-              "bind": "legend"
-            }
-          ],
+          
           "transform": [
             { "filter": "isValid(datum.Crash_Longitude) && isValid(datum.Crash_Latitude)" },
             { "filter": "datum.Crash_Longitude >= 137 && datum.Crash_Longitude <= 155 && datum.Crash_Latitude >= -29.5 && datum.Crash_Latitude <= -9" },
             { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
             { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
-            { "filter": { "param": "severitySel", "empty": true } },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
@@ -233,12 +226,6 @@
           ],
           "layer": [
             {
-              "params": [
-                {
-                  "name": "severitySel",
-                  "select": { "type": "point", "fields": ["Crash_Severity"], "toggle": true }
-                }
-              ],
               "transform": [
                 { "calculate": "datum.Crash_Month != null ? datum.Crash_Month : (datum['Crash Month'] != null ? datum['Crash Month'] : (datum.Month != null ? datum.Month : datum.month))", "as": "MonthRaw" },
                 { "calculate": "toNumber(datum.MonthRaw)", "as": "MonthIndex" },
@@ -260,7 +247,7 @@
                 },
                 "x": { "field": "CrashCount", "type": "quantitative", "title": "Crash count" },
                 "color": { "field": "Crash_Severity", "type": "nominal", "title": "Severity", "legend": null, "scale": { "scheme": "tableau10" } },
-                "opacity": { "condition": { "param": "severitySel", "value": 1 }, "value": 0.25 },
+                "opacity": { "value": 0.85 },
                 "tooltip": [
                   { "field": "MonthName", "type": "nominal", "title": "Month" },
                   { "field": "Crash_Severity", "type": "nominal", "title": "Severity" },
