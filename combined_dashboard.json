@@ -111,12 +111,12 @@
     {
       "name": "yearStart",
       "value": 2000,
-      "bind": { "input": "range", "name": "Year from: ", "min": 2000, "max": 2025, "step": 1, "element": "#controls-years" }
+      "bind": { "input": "range", "name": "Year from: ", "min": 2001, "max": 2021, "step": 1, "element": "#controls-years" }
     },
     {
       "name": "yearEnd",
       "value": 2025,
-      "bind": { "input": "range", "name": "Year to: ", "min": 2000, "max": 2025, "step": 1, "element": "#controls-years" }
+      "bind": { "input": "range", "name": "Year to: ", "min": 2001, "max": 2021, "step": 1, "element": "#controls-years" }
     }
   ],
   "hconcat": [
@@ -157,6 +157,7 @@
             { "calculate": "toNumber(datum.Crash_Year)", "as": "YearNum" },
             { "filter": "isValid(datum.YearNum) && datum.YearNum >= yearStart && datum.YearNum <= yearEnd" },
             { "filter": "sevTop == 'All' || indexof(lower(datum.Crash_Severity), lower(sevTop)) >= 0" },
+            { "filter": { "param": "severitySel", "empty": true } },
             { "filter": "(lgaSelect == 'All' || indexof(lower(datum.Loc_Local_Government_Area), lower(lgaSelect)) >= 0)" },
             { "filter": "typeFilter == 'All' || indexof(lower(datum.Crash_Type), lower(typeFilter)) >= 0" },
             { "filter": "natureFilter == 'All' || indexof(lower(datum.Crash_Nature), lower(natureFilter)) >= 0" },
@@ -188,7 +189,7 @@
                 "columns": 1
               }
             },
-            "opacity": { "condition": { "param": "severitySel", "value": 0.95 }, "value": 0.2 },
+            "opacity": { "value": 0.9 },
             "tooltip": [
               { "field": "Crash_Ref_Number", "title": "Ref" },
               { "field": "Crash_Severity", "title": "Severity" },
