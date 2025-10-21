@@ -215,7 +215,7 @@
             "text": "Monthly Crashes by Severity",
             "anchor": "start",
             "subtitle": [
-              "Stacked bars show monthly crash counts by severity; green rule = mean total. Click bars/legend to highlight.",
+              "Stacked bars show monthly crash counts by severity; green rule = mean total. Click bars to highlight.",
               "Why: Spot seasonality and severity mix. Look for peaks and months above the mean."
             ]
           },
